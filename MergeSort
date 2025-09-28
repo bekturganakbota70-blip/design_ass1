@@ -1,0 +1,43 @@
+package com.assignment1;
+
+public final class MergeSort {
+    private static final int CUTOFF = 32;
+
+    private MergeSort() {}
+
+    public static void sort(int[] a) {
+        if (a == null || a.length < 2) return;
+        int[] buf = new int[a.length];
+        System.arraycopy(a, 0, buf, 0, a.length);
+        sortRec(buf, a, 0, a.length - 1);
+    }
+
+    private static void sortRec(int[] src, int[] dest, int l, int r) {
+        SortMetrics.enter();
+        try {
+            int n = r - l + 1;
+            if (n <= CUTOFF) {
+                Utils.insertionSort(dest, l, r);
+                return;
+            }
+            int mid = l + (r - l) / 2;
+            sortRec(dest, src, l, mid);
+            sortRec(dest, src, mid + 1, r);
+
+            int i = l, j = mid + 1, k = l;
+            while (i <= mid && j <= r) {
+                SortMetrics.addComparisons(1);
+                if (src[i] <= src[j]) {
+                    dest[k++] = src[i++];
+                } else {
+                    dest[k++] = src[j++];
+                }
+                SortMetrics.addMoves(1);
+            }
+            while (i <= mid) dest[k++] = src[i++];
+            while (j <= r) dest[k++] = src[j++];
+        } finally {
+            SortMetrics.exit();
+        }
+    }
+}
