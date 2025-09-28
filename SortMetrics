@@ -1,0 +1,37 @@
+package com.assignment1;
+
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+
+public final class SortMetrics {
+    private SortMetrics() {}
+
+    private static final ThreadLocal<Integer> depth = ThreadLocal.withInitial(() -> 0);
+    private static final AtomicInteger maxDepth = new AtomicInteger(0);
+    private static final AtomicLong comparisons = new AtomicLong(0);
+    private static final AtomicLong moves = new AtomicLong(0);
+
+    public static void enter() {
+        int d = depth.get() + 1;
+        depth.set(d);
+        maxDepth.updateAndGet(x -> Math.max(x, d));
+    }
+
+    public static void exit() {
+        depth.set(Math.max(0, depth.get() - 1));
+    }
+
+    public static void addComparisons(long c) { comparisons.addAndGet(c); }
+    public static void addMoves(long m) { moves.addAndGet(m); }
+
+    public static int getMaxDepth() { return maxDepth.get(); }
+    public static long getComparisons() { return comparisons.get(); }
+    public static long getMoves() { return moves.get(); }
+
+    public static void reset() {
+        depth.set(0);
+        maxDepth.set(0);
+        comparisons.set(0);
+        moves.set(0);
+    }
+}
