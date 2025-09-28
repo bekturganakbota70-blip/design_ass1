@@ -1,0 +1,78 @@
+package com.assignment1;
+
+import java.util.Arrays;
+import java.util.Comparator;
+
+public final class ClosestPair {
+    private ClosestPair() {}
+
+    /**
+     * Compute smallest distance between any two points in array.
+     */
+    public static double findClosest(Point2D[] pts) {
+        if (pts == null || pts.length < 2) {
+            throw new IllegalArgumentException("Need at least 2 points");
+        }
+        Point2D[] px = pts.clone();
+        Arrays.sort(px, Comparator.comparingDouble(p -> p.x));
+        Point2D[] py = px.clone();
+        Arrays.sort(py, Comparator.comparingDouble(p -> p.y));
+        return closestRec(px, py, 0, pts.length - 1);
+    }
+
+    private static double closestRec(Point2D[] px, Point2D[] py, int l, int r) {
+        int n = r - l + 1;
+        if (n <= 3) {
+            return bruteForce(px, l, r);
+        }
+
+        int mid = l + (r - l) / 2;
+        double midX = px[mid].x;
+
+        // split py by midX
+        Point2D[] leftY = new Point2D[n];
+        Point2D[] rightY = new Point2D[n];
+        int li = 0, ri = 0;
+        for (Point2D p : py) {
+            if (p.x <= midX) leftY[li++] = p;
+            else rightY[ri++] = p;
+        }
+
+        double d1 = closestRec(px, Arrays.copyOf(leftY, li), l, mid);
+        double d2 = closestRec(px, Arrays.copyOf(rightY, ri), mid + 1, r);
+        double d = Math.min(d1, d2);
+
+        // strip points within d of midX
+        Point2D[] strip = new Point2D[n];
+        int si = 0;
+        for (Point2D p : py) {
+            if (Math.abs(p.x - midX) < d) {
+                strip[si++] = p;
+            }
+        }
+
+        // check up to 7 next neighbors in y-order
+        for (int i = 0; i < si; i++) {
+            for (int j = i + 1; j < si && (strip[j].y - strip[i].y) < d; j++) {
+                d = Math.min(d, dist(strip[i], strip[j]));
+            }
+        }
+        return d;
+    }
+
+    private static double bruteForce(Point2D[] pts, int l, int r) {
+        double min = Double.POSITIVE_INFINITY;
+        for (int i = l; i <= r; i++) {
+            for (int j = i + 1; j <= r; j++) {
+                min = Math.min(min, dist(pts[i], pts[j]));
+            }
+        }
+        return min;
+    }
+
+    private static double dist(Point2D a, Point2D b) {
+        double dx = a.x - b.x;
+        double dy = a.y - b.y;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+}
