@@ -1,0 +1,48 @@
+package com.assignment1;
+
+import java.util.concurrent.ThreadLocalRandom;
+
+public final class QuickSort {
+    private QuickSort() {}
+
+    public static void sort(int[] a) {
+        if (a == null || a.length < 2) return;
+        quicksort(a, 0, a.length - 1);
+    }
+
+    private static void quicksort(int[] a, int l, int r) {
+        while (l < r) {
+            SortMetrics.enter();
+            try {
+                // случайный pivot
+                int pivotIndex = ThreadLocalRandom.current().nextInt(l, r + 1);
+                Utils.swap(a, pivotIndex, r);
+                int pivot = a[r];
+
+                int i = l - 1;
+                for (int j = l; j < r; j++) {
+                    SortMetrics.addComparisons(1);
+                    if (a[j] <= pivot) {
+                        i++;
+                        Utils.swap(a, i, j);
+                    }
+                }
+                Utils.swap(a, i + 1, r);
+                int m = i + 1;
+
+                // рекурсировать в меньшую часть
+                int leftSize = m - 1 - l;
+                int rightSize = r - (m + 1);
+                if (leftSize < rightSize) {
+                    if (l < m - 1) quicksort(a, l, m - 1);
+                    l = m + 1; // хвост-итерация
+                } else {
+                    if (m + 1 < r) quicksort(a, m + 1, r);
+                    r = m - 1; // хвост-итерация
+                }
+            } finally {
+                SortMetrics.exit();
+            }
+        }
+    }
+}
